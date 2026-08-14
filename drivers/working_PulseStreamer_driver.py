@@ -12,9 +12,6 @@ Correct hardware-level architecture
 
 Max Note: Encoding a pulse sequence using the PulseStreamer is very easy!
 
-
-
-
 """
 
 import time
@@ -72,19 +69,18 @@ class PulseStreamer82:
     def _compile_sequence(self):
         """
         Build ONE hardware Sequence object from all channels.
-        Ensures all channels have identical total duration.
+        Supports both digital and analog outputs.
         """
-
+        
         if not self.channel_sequences:
             raise RuntimeError("No channel sequences defined.")
-
+            
         # Compute total duration of each channel
         totals = {
             ch: sum(duration for duration, _ in seq)
             for ch, seq in self.channel_sequences.items()
-        }
+            }
 
-        # Ensure all totals are identical
         durations = list(totals.values())
         if not all(d == durations[0] for d in durations):
             raise ValueError(f"Channel durations mismatch: {totals}")
@@ -95,7 +91,15 @@ class PulseStreamer82:
         seq = Sequence()
 
         for ch, pulses in self.channel_sequences.items():
-            seq.setDigital(ch, pulses)
+
+            if ch == "AO0":
+                seq.setAnalog(0, pulses)
+
+            elif ch == "AO1":
+                seq.setAnalog(1, pulses)
+
+            else:
+                seq.setDigital(ch, pulses)
 
         return seq
 
@@ -176,7 +180,38 @@ class PulseStreamer82:
 
         self._is_streaming = True
         log.info("Synchronized pulse sequence started")
+    
+    
+    def set_trigger_mode(self, trigger=TriggerStart.IMMEDIATE):
+        """
+        Configure the PulseStreamer trigger mode.
 
+        Parameters
+        ----------
+        trigger : pulsestreamer.TriggerStart
+
+            TriggerStart.IMMEDIATE
+                Start sequence immediately.
+
+            TriggerStart.SOFTWARE
+                Wait for a software trigger.
+
+            TriggerStart.HARDWARE_RISING
+                Wait for a rising edge on the PulseStreamer
+                trigger input.
+
+            TriggerStart.HARDWARE_FALLING
+                Wait for a falling edge on the PulseStreamer
+                trigger input.
+        """
+
+        if self.ps is None:
+            raise RuntimeError("Not connected to PulseStreamer.")
+
+        self.ps.setTrigger(trigger)
+
+        log.info(f"PulseStreamer trigger mode set to: {trigger}")
+        
     # --------------------------------------------------
     # STOP STREAMING
     # --------------------------------------------------
@@ -206,6 +241,7 @@ class PulseStreamer82:
 
         self.channel_sequences[channel] = [(total_time, 0)]
         log.info(f"Channel {channel} paused")
+
 
     def resume_channel(self, channel):
         """

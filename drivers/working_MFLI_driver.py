@@ -17,7 +17,7 @@ instrument server (e.g. NSpyre) to coordinate ODMR measurements.
 import numpy as np
 import zhinst.qcodes as ziqc
 from zhinst.toolkit import Session
-
+import time
 
 class _MFLI:
     """Minimal control interface for MFLI lock-in amplifier."""
@@ -108,12 +108,14 @@ class _MFLI:
         self.tk_object.oscs[0].freq(freq_hz)
         print(f"[INFO] Set frequency to {freq_hz / 1e6:.6f} kHz")
 
+
     def set_output(self, enable: bool = True):
         """Enable or disable signal output."""
         if not self.connected:
             raise RuntimeError("MFLI not connected.")
         self.tk_object.sigouts[0].on(enable)
         print(f"[INFO] Output {'enabled' if enable else 'disabled'}")
+
 
     def set_demod_time_constant(self, tau_s: float):
         """Set demodulator time constant (in seconds)."""
@@ -149,7 +151,8 @@ class _MFLI:
         except Exception as e:
             print(f"[ERROR] Could not read signal: {e}")
             return dict(x=None, y=None, r=None, phase=None)
-      
+  
+        
     def get_demod_ref_freq(self):
         
         """Read the demodulator reference frequency.
@@ -166,3 +169,178 @@ class _MFLI:
         except Exception as e:
             print(f"Unable to read demod reference frequency: {e}")
             return None
+        
+
+    # -------------------------------------------------------------------------
+    # Scope Acquisition
+    # -------------------------------------------------------------------------
+    def get_scope_trace(self, channel: int = 0):
+        """
+        Acquires a single shot of scope data from the active MFLI scope module.
+
+        Args:
+            channel (int): Scope channel index to extract (0 for Channel 1)
+
+        Returns:
+            dict: {"time": ndarray (in ms), "signal": ndarray (in µV)}
+        """
+        self.ensure_connection()
+        if not self.connected:
+            raise RuntimeError("MFLI not connected.")
+
+        try:
+            # 1. Initialize the toolkit scope module
+            scope_module = self.tk_session.modules.scope
+            wave_node = self.tk_object.scopes[0].wave
+            
+            # Subscribe to the target scope wave node
+            scope_module.subscribe(wave_node)
+            
+            # Ensure scope mode is set to time domain (1)
+            scope_module.mode(1)
+            
+            # 2. Start execution and trigger a single capture block
+            scope_module.execute()
+            self.tk_object.scopes[0].enable(True)
+            self.tk_session.sync()
+            
+            # Simple timeout loop to wait for data collection to finish
+            timeout = 2.0  # seconds
+            start_time = time.time()
+            while scope_module.records() == 0:
+                time.sleep(0.01)
+                if time.time() - start_time > timeout:
+                    raise TimeoutError("MFLI Scope module timed out waiting for data.")
+            
+            # 3. Read back and extract data
+            data = scope_module.read()
+            self.tk_object.scopes[0].enable(False) # Turn scope off
+            
+            if wave_node in data:
+                scope_records = data[wave_node]
+                latest_record = scope_records[-1] # Grabs the latest trigger block
+                
+                # Extract targeted wave channel
+                wave = latest_record["wave"][channel]
+                
+                # 4. Process math to match LabOne visual output
+                totalsamples = latest_record["totalsamples"]
+                dt = latest_record["dt"]
+                
+                # Shift time axis so 0 is centered exactly like LabOne scope
+                time_axis = (np.arange(totalsamples) - totalsamples // 2) * dt * 1e3  # convert to ms
+                
+                # Convert raw voltage to microvolts (µV)
+                signal_uV = wave * 1e6
+                
+                return {"time": time_axis, "signal": signal_uV}
+            else:
+                print("[WARN] Scope wave node missing from read data block.")
+                return None
+
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch scope trace: {e}")
+            return None
+        
+        
+    def get_background_PL(self, integration_time=0.1, channel=0):
+        """
+        Measure background PL from raw MFLI current input.
+        
+        The scope acquires repeated traces for the specified integration_time.
+        The returned value is the average current over all acquired samples.
+        
+        Parameters
+        ----------
+        integration_time : float
+            Total averaging time (seconds).
+            
+        channel : int
+            Scope channel index.
+
+        Returns
+        -------
+        float
+            Averaged current input signal (Amps).
+            """
+
+        self.ensure_connection()
+
+        if not self.connected:
+            raise RuntimeError("MFLI not connected.")
+
+        scope = self.tk_session.modules.scope
+        wave_node = "/dev6813/scopes/0/wave"
+        
+        waves = []
+
+        try:
+            scope.finish()
+            scope.unsubscribe("*")
+            scope.subscribe(wave_node)
+            scope.mode(1)
+            
+            self.tk_object.scopes[0].enable(True)
+        
+            start = time.time()
+
+            while time.time() - start < integration_time:
+                scope.execute()
+                
+                # Wait for one trace
+                t0 = time.time()
+                
+                while scope.records() < 1:
+                    if time.time() - t0 > 1.0:
+                        raise TimeoutError("Scope acquisition timeout")
+                    time.sleep(0.001)
+
+            data = scope.read()
+            record = data[wave_node][0][-1]
+
+            wave = np.asarray(
+                record["wave"][channel],
+                dtype=float)
+
+            waves.append(wave)
+
+            self.tk_object.scopes[0].enable(False)
+            scope.finish()
+
+        except Exception as e:
+            print(f"[ERROR] Background PL acquisition failed: {e}")
+            self.tk_object.scopes[0].enable(False)
+            scope.finish()
+            return np.nan
+        
+        if len(waves) == 0:
+            return np.nan
+
+        # Average all traces and all samples
+        background_PL = np.mean(waves)
+
+        return float(background_PL)
+                        
+
+    def single_point_read(self):
+        """Read and average MFLI demodulator samples."""
+
+        x_vals, y_vals, r_vals, phase_vals = [], [], [], []
+
+        for _ in range(self.average):
+
+            signal = self.mfli.get_signal()
+
+            x_vals.append(signal["x"])
+            y_vals.append(signal["y"])
+            r_vals.append(signal["r"])
+            phase_vals.append(signal["phase"])
+
+        if self.average > 1:
+            time.sleep(0.001)
+
+        return {
+            "x": np.nanmean(x_vals),
+            "y": np.nanmean(y_vals),
+            "r": np.nanmean(r_vals),
+            "phase": np.nanmean(phase_vals)}

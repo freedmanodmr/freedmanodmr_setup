@@ -26,9 +26,10 @@ class _odmr_driver:
     """
 
     def __init__(self,
-                 siggen_name: str = 'sg',
+                 #siggen_name: str = 'sg',
                  mfli_name: str = 'mfli',
                  awg_name: str = 'awg',
+                 NIRlaser_name: str = 'laser',
                  modulation_freq_hz: float = 0,
                  mw_amplitude_dbm: float = 7.4,
                  step_hz: float = 5e6,
@@ -49,9 +50,10 @@ class _odmr_driver:
         gw = InstrumentGateway()
 
         # Auto-connect to instruments by name
-        self.sg = getattr(gw, siggen_name)
+        #self.sg = getattr(gw, siggen_name)
         self.mfli = getattr(gw, mfli_name)
         self.awg = getattr(gw, awg_name)
+        self.laser = getattr(gw, NIRlaser_name)
 
         self.modulation_freq_hz = modulation_freq_hz
         self.mw_amplitude_dbm = mw_amplitude_dbm
@@ -64,7 +66,6 @@ class _odmr_driver:
     # -------------------------------------------------------------------------
     # Core functions
     # -------------------------------------------------------------------------
-
 
     def single_point_read(self):
         """Read and average MFLI demodulator samples."""
@@ -83,7 +84,7 @@ class _odmr_driver:
             phase_vals.append(phase)
 
             if self.average > 1:
-                time.sleep(0.002)
+                time.sleep(0.001)
 
         x_vals = np.array(x_vals, dtype=float)
         y_vals = np.array(y_vals, dtype=float)
@@ -97,7 +98,8 @@ class _odmr_driver:
             "r": np.nanmean(r_vals),
             "phase": np.nanmean(phase_vals),
             }
-    
+
+
     def cnts(self, dwell: float = 0.050) -> float:
         """Return an equivalent 'photon count' based on the MFLI demodulated signal.
         dwell: integration time in seconds to average over (default 50 ms)
@@ -109,9 +111,10 @@ class _odmr_driver:
         while time.time() < t_end:
             sample = self.single_point_read()
             vals.append(sample["r"])   # Used to say "r"
-            time.sleep(0.050)
+            time.sleep(0.0025)
             
         return float(np.nanmean(vals))
+
 
     def accum_cnts(self, dwell: float = 0.050) -> float:
         """Return an equivalent 'photon count' based on the MFLI demodulated signal.
@@ -173,43 +176,7 @@ class _odmr_driver:
             )
         
         time.sleep(0.01)
-
-        
-# ---------------------------------
-# ODMR operating modes from AWG
-# ---------------------------------
-# PROBABLY DON'T WORK AT THE MOMENT
-    def setCWMode(self, freq=2000, amp=5, DutyCycle=50, offset=0, channel=1):
-        """
-        Continuous wave ODMR: use SQUARE waveform.
-        
-        Defaults are set to 50% duty cycle with a 5 Vpp 
-        (required for TTL) and a waveperiod of 0.005 seconds (2 kHz).
-        
-        Default Channel is 1, but for the laser you must specific "channel=2")
-        
-        """
-        self.awg.setWaveType(self.WAVEFORM_SQUARE, channel)
-        self.awg.setWaveFrequency(freq, channel)
-        self.awg.setWaveAmplitude(amp, channel)
-        self.awg.setDutyCycle(DutyCycle)
-        self.awg.setWaveOffset(offset, channel)
-
-    def setPulsedMode(self, rep_rate=100, width=16, amp=5, offset=0, channel=1):
-        """Pulsed ODMR: use PULSE waveform."""
-        """
-        Defaults are set to 16 ns pulse with a 5 Vpp 
-        (required for TTL) and a waveperiod of 0.01 seconds (rep_rate=100 Hz) to 
-        allow for 100 measurements per second. 
-        
-        Default Channel is 1, but for the laser you must specific "channel=2")
-        
-        """
-        self.awg.selectPulseWaveform(channel)
-        self.awg.setWaveFrequency(rep_rate, channel)   # repetition rate
-        self.awg.setPulseWidth(width, channel)
-        self.awg.setWaveAmplitude(amp, channel)
-        self.awg.setWaveOffset(offset, channel)
+    
     
     # -----------------------------
     # High-level pulse sequence programming
@@ -423,30 +390,7 @@ class _odmr_driver:
         # Ensure TrueArb mode is enabled
         # ------------------------------
         self.awg._write(f"C{channel}:ARWV NAME,{name}")   # assign waveform
- #       self.awg._write(f"C{channel}:ARWV MODE,TRUE")    # force TrueArb mode, I think this is breaking the mode
- #       self.awg._write(f"C{channel}:ARWV SRATE,{sr}")   # set sample rate
- #       self.awg.output(channel, True)                    # enable output
-        
-        # ------------------------------
-        # Apply amplitude & offset
-        # ------------------------------
- #      self.awg.set_amplitude(channel, amplitude)
- #      self.awg.set_offset(channel, offset)
-    
-        # ------------------------------
-        # Enable channel output explicitly
-        # ------------------------------
-#        self.awg._write(f"C{channel}:ARWV STATE,ON")
 
-        # ------------------------------
-        # Configure optional channel burst
-        # ------------------------------
-#        if trigger_channel_burst:
-#            self.awg._write(f"C{channel}:BTWV STATE,ON")               # enable burst
-#            self.awg._write(f"C{channel}:BTWV TRSR,INT")               # internal trigger
-#            self.awg._write(f"C{channel}:BTWV TRMD,RISE")              # falling edge trigger
-#            self.awg._write(f"C{channel}:BTWV TIME,{burst_ncycles}")   # number of cycles
-#            self.awg._write(f"C{channel}:BTWV DLAY,{burst_delay}")     # optional delay
 
         # ------------------------------
         # Summary
