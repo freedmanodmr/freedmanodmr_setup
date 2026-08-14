@@ -13,6 +13,7 @@ from pyqtgraph.Qt import QtWidgets
 
 import template.experiments.odmr_direct
 import template.experiments.odmr_lockin
+import template.experiments.APD_test
 
 #------------------------------------------------------------------------------
 # Lock-in Detection Method - Laser and microwaves are modulated via the AWG/PS82. 
@@ -61,7 +62,7 @@ class CWODMRWidget(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -72,7 +73,44 @@ class CWODMRWidget(ExperimentWidget):
         super().__init__(params_config, 
                         template.experiments.odmr_lockin,
                         'SpinMeasurements',
-                        'cw_odmr_sweep_linear_ps82',
+                        'cw_odmr_sweep_linear_ps82_newbkg',  
+                        title='ODMR')
+
+
+class TempPeakTrackCWODMRWidget(ExperimentWidget):
+    def __init__(self):
+        params_config = {
+            'probe_frequencies': {
+                'display_text': 'Probe Frequencies (Hz)',
+                'widget': QtWidgets.QLineEdit(
+                    '38e6, 66e6, 112e6, 179e6, 275e6, 350e6, 470e6, 535e6, 555e6, 650e6, 1125e6, 1195, 1475e6'),
+                },
+            'iterations': {
+                'display_text': 'Iterations',
+                'widget': SpinBox(value=10, int=True, bounds=(1, None), dec=True),
+            },
+            'integration_time': {
+                'display_text': 'Averaging Time',
+                'widget': SpinBox(value=0.1, suffix='s',
+                siPrefix=True, bounds=(0.001, 10), dec=True),
+            },
+            'modulation_freq': {
+                'display_text': 'Lock-in Mod Frequency',
+                'widget': SpinBox(value=2000, suffix='Hz',
+                siPrefix=True, bounds=(0, 4e6), dec=True),
+            },
+            'rf_amplitude': {
+                'display_text': 'Microwave Amplitude',
+                'widget': SpinBox(value=5, suffix='dBm',
+                siPrefix=True, bounds=(-20, 7.4), dec=True)
+                },
+            'dataset': {
+                'display_text': 'Data Set',
+                'widget': QtWidgets.QLineEdit('track')}}
+        super().__init__(params_config, 
+                        template.experiments.odmr_lockin,
+                        'SpinMeasurements',
+                        'cw_odmr_probepeaks_ps82',  
                         title='ODMR')
 
 
@@ -154,7 +192,7 @@ class MicrowaveDelayLockinWidget(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -248,7 +286,7 @@ class InitialisationOptLockinWidget(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -259,7 +297,7 @@ class InitialisationOptLockinWidget(ExperimentWidget):
             params_config,
             template.experiments.odmr_lockin,
             'SpinMeasurements',
-            'initialisation_opt_lockin',
+            'initialisation_opt_lockin_ps82',
             title='Initialisation Pulse Optimisation')  
 
 
@@ -341,7 +379,7 @@ class ReadoutPulseOptLockinWidget(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -352,7 +390,7 @@ class ReadoutPulseOptLockinWidget(ExperimentWidget):
             params_config,
             template.experiments.odmr_lockin,
             'SpinMeasurements',
-            'readout_opt_lockin',
+            'readout_opt_lockin_ps82',
             title='Readout Pulse Optimisation')
 
 
@@ -435,7 +473,7 @@ class ReadoutPulseDelayOptLockinWidget(ExperimentWidget):
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
                 'widget': SpinBox(value=7.4, suffix='dBm',
-                siPrefix=True, bounds=(-20, 7.4), dec=True),
+                siPrefix=True, bounds=(-20, 5), dec=True),
             },
             'dataset': {
                 'display_text': 'Dataset',
@@ -445,7 +483,7 @@ class ReadoutPulseDelayOptLockinWidget(ExperimentWidget):
             params_config,
             template.experiments.odmr_lockin,
             'SpinMeasurements',
-            'readout_delay_opt_lockin',
+            'readout_delay_opt_lockin_ps82',
             title='Readout Pulse Delay Optimisation')
 
 
@@ -467,7 +505,7 @@ class RabiWidgetLockin(ExperimentWidget):
             'pulse_start_ns': {
                 'display_text': 'Min Microwave Pulse Length',
                 'widget': SpinBox(
-                    value=0,
+                    value=20,
                     suffix='ns',
                     bounds=(0, None),
                     int=True,
@@ -527,7 +565,7 @@ class RabiWidgetLockin(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -538,7 +576,7 @@ class RabiWidgetLockin(ExperimentWidget):
             params_config,
             template.experiments.odmr_lockin,
             'SpinMeasurements',
-            'rabi_oscillations_lockin',
+            'rabi_oscillations_lockin_ps82',
             title='Rabi Oscillations')
 
 
@@ -620,7 +658,7 @@ class Pulse_ODMRWidgetLockin(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
@@ -631,7 +669,7 @@ class Pulse_ODMRWidgetLockin(ExperimentWidget):
             params_config,
             template.experiments.odmr_lockin,
             'SpinMeasurements',
-            'pulsed_odmr_sweep_linear_lockin',
+            'pulsed_odmr_sweep_linear_lockin_ps82',
             title='Pulsed-ODMR_PMT')        
         
         
@@ -831,6 +869,116 @@ class RamseyLockinWidget(ExperimentWidget):
             title='Ramsey Spectroscopy')
         
 
+class TwoPulse_ODMRWidgetLockin(ExperimentWidget):
+    """
+    GUI widget to run Pulsed-detection ODMR experiment.
+    """
+    def __init__(self):
+        params_config = {
+            'start_freq': {
+                'display_text': 'Start Frequency',
+                'widget': SpinBox(
+                    value=3e9,
+                    suffix='Hz',
+                    siPrefix=True,
+                    bounds=(1e3, 6.074e9),
+                    dec=True),
+            },
+            'stop_freq': {
+                'display_text': 'Stop Frequency',
+                'widget': SpinBox(
+                    value=4e9,
+                    suffix='Hz',
+                    siPrefix=True,
+                    bounds=(1e3, 6.075e9),
+                    dec=True),
+            },
+            'sg_freq': {
+                'display_text': 'pi-pulse frequency',
+                'widget': SpinBox(
+                    value=4e9,
+                    suffix='Hz',
+                    siPrefix=True,
+                    bounds=(1e3, 6.075e9),
+                    dec=True),
+            },
+            'sg_pulse_length_ns': {
+                'display_text': 'SG_Microwave Pulse Length',
+                'widget': SpinBox(
+                    value=10,
+                    suffix='ns',
+                    bounds=(1, None),
+                    int=True,
+                    dec=True),
+            },
+            'hmc_pulse_length_ns': {
+                'display_text': 'HMC_Microwave Pulse Length',
+                'widget': SpinBox(
+                    value=10,
+                    suffix='ns',
+                    bounds=(1, None),
+                    int=True,
+                    dec=True),
+            },
+            'num_points': {
+                'display_text': 'Number of Points',
+                'widget': SpinBox(
+                    value=51,
+                    int=True,
+                    bounds=(5, 2000),
+                    dec=True),
+            },
+            'integration_time': {
+                'display_text': 'Averaging Time',
+                'widget': SpinBox(value=1, suffix='s',
+                siPrefix=True, bounds=(0.001, None), dec=True),
+            },
+            'iterations': {
+                'display_text': 'Iterations',
+                'widget': SpinBox(value=10, int=True, 
+                                  bounds=(1, None), dec=True),
+            },
+            'init_ns': {
+                'display_text': 'Initialisation Pulse Width',
+                'widget': SpinBox(value=6e3, suffix='ns',
+                siPrefix=False, bounds=(100, None), dec=True),
+            },
+            'mw_gap_ns_1': {
+                'display_text': 'Initialisation to MW Gap',
+                'widget': SpinBox(value=5, suffix='ns',
+                siPrefix=False, bounds=(0, None), dec=True),
+            },
+            'mw_gap_ns_2': {
+                'display_text': 'MW to Readout Gap',
+                'widget': SpinBox(value=5, suffix='ns',
+                siPrefix=False, bounds=(0, None), dec=True),
+            },
+            'readout_ns': {
+                'display_text': 'Readout Pulse Width',
+                'widget': SpinBox(value=500, suffix='ns',
+                siPrefix=False, bounds=(10, None), dec=True),
+            },
+            'recovery_ns': {
+                'display_text': 'Recovery Time',
+                'widget': SpinBox(value=6e5, suffix='ns',
+                siPrefix=False, bounds=(0, None), dec=True),
+            },
+            'rf_amplitude': {
+                'display_text': 'Microwave Amplitude',
+                'widget': SpinBox(value=5, suffix='dBm',
+                siPrefix=True, bounds=(-20, 7.4), dec=True),
+            },
+            'dataset': {
+                'display_text': 'Dataset',
+                'widget': QtWidgets.QLineEdit('odmr'),
+            }}
+        super().__init__(
+            params_config,
+            template.experiments.odmr_lockin,
+            'SpinMeasurements',
+            'two_pulsed_odmr_sweep_linear_lockin_ps82_awg',
+            title='TwoPulsed-ODMR_PMT')        
+
 #------------------------------------------------------------------------------
 # Direct Detection Methods - Laser and microwaves are modulated via the AWG/PS82. 
 #                            The data is recorded using APD on the TimeTagger
@@ -971,8 +1119,8 @@ class ReadoutWidget(ExperimentWidget):
                     int=True,
                     dec=True),
             },
-            'mw_gap_ns': {
-                'display_text': 'Time Gap',
+            'mw_gap_ns_1': {
+                'display_text': 'First Time Gap',
                 'widget': SpinBox(
                     value=50,
                     suffix='ns',
@@ -980,14 +1128,15 @@ class ReadoutWidget(ExperimentWidget):
                     int=True,
                     dec=True),
             },
+            'mw_gap_ns_2': {
+                'display_text': 'Second Time Gap',
+                 'widget': SpinBox(value=50, suffix='ns',
+                 bounds=(0, None), int=True, dec=True),
+            },
             'mw_ns': {
                 'display_text': 'Microwave Pulse Length',
-                'widget': SpinBox(
-                    value=500,
-                    suffix='ns',
-                    bounds=(50, None),
-                    int=True,
-                    dec=True),
+                'widget': SpinBox(value=500,suffix='ns',
+                    bounds=(50, None), int=True, dec=True),
             },
             'integration_time': {
                 'display_text': 'Averaging Time',
@@ -996,7 +1145,8 @@ class ReadoutWidget(ExperimentWidget):
             },
             'iterations': {
                 'display_text': 'Iterations',
-                'widget': SpinBox(value=10, int=True, bounds=(1, None), dec=True),
+                'widget': SpinBox(value=10, int=True, 
+                                  bounds=(1, None), dec=True),
             },
             'binwidth_ns': {
                 'display_text': 'Bin Width',
@@ -1018,6 +1168,16 @@ class ReadoutWidget(ExperimentWidget):
                 'widget': SpinBox(value=1, suffix='',
                 siPrefix=False, bounds=(1, None), dec=True),
             },
+            'freq': {
+                'display_text': 'Frequency',
+                'widget': SpinBox(value=2.87e9, suffix='Hz',
+                siPrefix=True, bounds=(1, None), dec=True),
+            },
+            'rf_amplitude': {
+                'display_text': 'Microwave Amplitude',
+                'widget': SpinBox(value=7.4, suffix='dBm',
+                siPrefix=True, bounds=(-20, 7.4), dec=True),
+            },
             'dataset': {
                 'display_text': 'Dataset',
                 'widget': QtWidgets.QLineEdit('readout'),
@@ -1026,7 +1186,7 @@ class ReadoutWidget(ExperimentWidget):
             params_config,
             template.experiments.odmr_direct,
             'SpinMeasurements',
-            'odmr_readout_optimisation',
+            'odmr_readout_observation_ps82',
             title='Readout Optimisation')
 
 
@@ -1377,7 +1537,7 @@ class RabiWidget(ExperimentWidget):
             title='Rabi Oscillations')
 
                 
-class APD_CW_ODMRWidget(ExperimentWidget):
+class APD_Pulsed_ODMRWidget(ExperimentWidget):
     """
     GUI widget to run APD ODMR experiment.
     """
@@ -1466,19 +1626,18 @@ class APD_CW_ODMRWidget(ExperimentWidget):
             },
             'rf_amplitude': {
                 'display_text': 'Microwave Amplitude',
-                'widget': SpinBox(value=7.4, suffix='dBm',
+                'widget': SpinBox(value=5, suffix='dBm',
                 siPrefix=True, bounds=(-20, 7.4), dec=True),
             },
             'dataset': {
                 'display_text': 'Dataset',
                 'widget': QtWidgets.QLineEdit('odmr'),
             }}
-        super().__init__(
-            params_config,
-            template.experiments.odmr_direct,
-            'SpinMeasurements',
-            'odmr_sweep_linear_timetagger_ps82',
-            title='APD_CW_ODMR')        
+        super().__init__(params_config, 
+                        template.experiments.odmr_direct,
+                        'SpinMeasurements',
+                        'odmr_sweep_linear_timetagger_ps82',  
+                        title='ODMR')        
 
 
 class EDFSWidget(ExperimentWidget):
@@ -2010,12 +2169,12 @@ def process_ODMR_data(sink: DataSink):
     for s,_ in enumerate(sink.datasets['signal']):
         freqs = sink.datasets['signal'][s][0]
         sig = sink.datasets['signal'][s][1]
-        bg = sink.datasets['background'][s][1]
-        diff_sweeps.append(np.stack([freqs, sig - bg]))
-        contrast_sweeps.append(np.stack([freqs, ((sig - bg) / bg)]))
+        bkg = sink.datasets['background'][s][1]
+        diff_sweeps.append(np.stack([freqs, ((sig) - bkg)]))
+        contrast_sweeps.append(np.stack([freqs, ((sig) / bkg)])) # Bear in mind that the lock-in signal is already the difference in PL.
     sink.datasets['diff'] = diff_sweeps
     sink.datasets['contrast'] = contrast_sweeps
-    print('x-axis values:', freqs, 'y-axis values, first signal:', sig, '... and then bkg:', bg)
+    print('x-axis values:', freqs, 'y-axis values, first signal:', sig, '... and then bkg:', bkg)
     
 
 def process_2D_ODMR_data(sink: DataSink):
@@ -2066,14 +2225,18 @@ class FlexLinePlotWidget(FlexLinePlotWidget):
         # create some default background plots
         self.add_plot('bg_avg',         series='background',   scan_i='',     scan_j='',  processing='Average')
         self.add_plot('bg_latest',      series='background',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_first',      series='background',   scan_i='0',    scan_j='1', processing='Average')
         self.hide_plot('bg_latest')
+        self.hide_plot('bg_first')
 
         # create some default diff plots
         self.add_plot('diff_avg',       series='diff',  scan_i='',      scan_j='',  processing='Average')
+        self.add_plot('diff_first',      series='diff',   scan_i='0',    scan_j='1', processing='Average')
         self.add_plot('diff_latest',    series='diff',  scan_i='-1',    scan_j='',  processing='Average')
         self.add_plot('diff_latest_10',    series='diff',  scan_i='-1',    scan_j='',  processing='Average')
         self.hide_plot('diff_latest_10')
         self.hide_plot('diff_latest')
+        self.hide_plot('diff_first')
         
         # create some default contrast plots
         self.add_plot('contrast_avg',       series='contrast',  scan_i='',      scan_j='',  processing='Average')
@@ -2107,9 +2270,10 @@ class FluorescenceTimePlotWidget(FlexLinePlotWidget):
         self.hide_plot('diff_avg')
         self.hide_plot('contrast_avg')
 
-        # Add the fluorescence plot
-        # create some default signal plots
-        self.add_plot('fluorescence',        series='time_spent',   scan_i='',     scan_j='',  processing='Append')
+        # Add the luminescence plot
+        self.add_plot('lock-in amplitude',        series='time_spent_signal',   scan_i='',     scan_j='',  processing='Append')
+        self.add_plot('luminescence',        series='time_spent_bkg',   scan_i='',     scan_j='',  processing='Append')
+        
 
         # Set axis ranges & labels appropriate for time-domain data
         self.line_plot.plot_item().setXRange(0.0, 10.0)  # adjust for your measurement
@@ -2127,8 +2291,6 @@ class InitialisationTimePlotWidget(FlexLinePlotWidget):
         self.hide_plot('diff_avg')
         self.hide_plot('contrast_avg')
 
-        # Add the fluorescence plot
-        # create some default signal plots
         self.add_plot('Initialisation',        series='histogram',   scan_i='',     scan_j='',  processing='Average')
 
         # Set axis ranges & labels appropriate for time-domain data
@@ -2140,6 +2302,52 @@ class InitialisationTimePlotWidget(FlexLinePlotWidget):
         # set the legend location
         legend.setOffset((-10, -50))
         
+
+class SpecificFlexLinePlotWidget(FlexLinePlotWidget):
+    """Add some default settings to the FlexSinkLinePlotWidget."""
+    def __init__(self):
+        super().__init__()
+        # create some default signal plots
+        self.add_plot('sig_1',        series='sig_1',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('sig_2',     series='sig_2',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('sig_3',      series='sig_3',   scan_i='0',    scan_j='1', processing='Average')
+        self.add_plot('sig_4',        series='sig_4',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('sig_5',     series='sig_5',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('sig_6',      series='sig_6',   scan_i='0',    scan_j='1', processing='Average')
+        self.add_plot('sig_7',        series='sig_7',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('sig_8',     series='sig_8',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('sig_9',      series='sig_9',   scan_i='0',    scan_j='1', processing='Average')
+        self.add_plot('sig_10',      series='sig_10',   scan_i='0',    scan_j='1', processing='Average')
+        self.add_plot('sig_11',     series='sig_11',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('sig_12',      series='sig_12',   scan_i='0',    scan_j='1', processing='Average')
+        self.add_plot('sig_13',      series='sig_13',   scan_i='0',    scan_j='1', processing='Average')
+
+        # create some default background plots
+        self.add_plot('bg_1',         series='bkg_1',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_2',      series='bkg_2',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_3',         series='bkg_3',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_4',      series='bkg_4',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_5',         series='bkg_5',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_6',      series='bkg_6',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_7',         series='bkg_7',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_8',      series='bkg_8',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_9',         series='bkg_9',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_10',      series='bkg_10',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_11',      series='bkg_11',   scan_i='-1',   scan_j='',  processing='Average')
+        self.add_plot('bg_12',         series='bkg_12',   scan_i='',     scan_j='',  processing='Average')
+        self.add_plot('bg_13',      series='bkg_13',   scan_i='-1',   scan_j='',  processing='Average')
+
+        # manually set the XY range
+        self.line_plot.plot_item().setXRange(1.0, 4.0)
+        self.line_plot.plot_item().setYRange(-0.0001, 0.0001)
+
+        # retrieve legend object
+        legend = self.line_plot.plot_widget.addLegend()
+        # set the legend location
+        legend.setOffset((-10, -50))
+
+        self.datasource_lineedit.setText('track')
+
         
 class _3DColourPlotWidget(HeatMapWidget):
     """Plot fluorescence vs delay vs microwave pulse length."""
@@ -2157,7 +2365,209 @@ class _3DColourPlotWidget(HeatMapWidget):
         # Optional: set fixed color scaling (otherwise autoscale)
         # self.image_item.setLevels((0.0, 1.0))
         
+class PLEPlotWidget(FlexLinePlotWidget):
+    """
+    Plot raw and power-normalized PLE signal versus wavelength.
+    """
 
+    def __init__(self):
+        super().__init__()
+
+        # Dataset name from the PLE experiment widget.
+        self.datasource_lineedit.setText('ple')
+
+        # --------------------------------------------------
+        # Raw PLE traces
+        # --------------------------------------------------
+
+        self.add_plot(
+            'Raw PLE Average',
+            series='running_average',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.add_plot(
+            'Raw Latest Sweep',
+            series='individual_sweeps',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.hide_plot('Raw Latest Sweep')
+
+        # --------------------------------------------------
+        # Power-normalized PLE traces
+        # --------------------------------------------------
+
+        self.add_plot(
+            'Normalized PLE Average',
+            series='normalized_running_average',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.add_plot(
+            'Normalized Latest Sweep',
+            series='normalized_sweeps',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.hide_plot('Normalized Latest Sweep')
+
+        # --------------------------------------------------
+        # Plot formatting
+        # --------------------------------------------------
+
+        self.line_plot.plot_item().setLabel(
+            'bottom',
+            'Wavelength',
+            units='nm',
+        )
+
+        self.line_plot.plot_item().setLabel(
+            'left',
+            'PLE Signal',
+        )
+
+        self.line_plot.plot_item().enableAutoRange()
+
+        legend = self.line_plot.plot_widget.addLegend()
+        legend.setOffset((-10, -50))
+
+    def update(self):
+        """
+        Safely expose the PLE datasets to FlexLinePlotWidget.
+        """
+        sink = self.plot_settings.sink
+
+        if not hasattr(sink, 'datasets'):
+            return
+
+        if sink.datasets is None:
+            return
+
+        # Depending on the nspyre version, datasets may either be
+        # exposed directly or nested under a second 'datasets' key.
+        if (
+            isinstance(sink.datasets, dict)
+            and 'datasets' in sink.datasets
+            and isinstance(sink.datasets['datasets'], dict)
+        ):
+            exp_datasets = sink.datasets['datasets']
+        else:
+            exp_datasets = sink.datasets
+
+        if not exp_datasets:
+            return
+
+        self.individual_sweeps = exp_datasets.get(
+            'individual_sweeps'
+        )
+
+        self.running_average = exp_datasets.get(
+            'running_average'
+        )
+
+        self.normalized_sweeps = exp_datasets.get(
+            'normalized_sweeps'
+        )
+
+        self.normalized_running_average = exp_datasets.get(
+            'normalized_running_average'
+        )
+        
+        
+class PLEPowerPlotWidget(FlexLinePlotWidget):
+    """
+    Plot PM100D optical power versus wavelength.
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.datasource_lineedit.setText('ple')
+
+        # --------------------------------------------------
+        # Power traces
+        # --------------------------------------------------
+
+        self.add_plot(
+            'Power Average',
+            series='power_running_average',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.add_plot(
+            'Power Latest Sweep',
+            series='power_sweeps',
+            scan_i='-1',
+            scan_j='',
+            processing='Average',
+        )
+
+        self.hide_plot('Power Latest Sweep')
+
+        # --------------------------------------------------
+        # Plot formatting
+        # --------------------------------------------------
+
+        self.line_plot.plot_item().setLabel(
+            'bottom',
+            'Wavelength',
+            units='nm',
+        )
+
+        self.line_plot.plot_item().setLabel(
+            'left',
+            'Optical Power',
+            units='W',
+        )
+
+        self.line_plot.plot_item().enableAutoRange()
+
+        legend = self.line_plot.plot_widget.addLegend()
+        legend.setOffset((-10, -50))
+
+    def update(self):
+        """
+        Safely expose the power datasets to FlexLinePlotWidget.
+        """
+        sink = self.plot_settings.sink
+
+        if not hasattr(sink, 'datasets'):
+            return
+
+        if sink.datasets is None:
+            return
+
+        if (
+            isinstance(sink.datasets, dict)
+            and 'datasets' in sink.datasets
+            and isinstance(sink.datasets['datasets'], dict)
+        ):
+            exp_datasets = sink.datasets['datasets']
+        else:
+            exp_datasets = sink.datasets
+
+        if not exp_datasets:
+            return
+
+        self.power_sweeps = exp_datasets.get(
+            'power_sweeps'
+        )
+
+        self.power_running_average = exp_datasets.get(
+            'power_running_average'
+        )
+        
 #--------------------------------------------------------
 #   Ce Experiments
 #--------------------------------------------------------
@@ -2382,3 +2792,229 @@ class CeInitialisationPS82Widget(ExperimentWidget):
             'ce_odmr_initialisation_optimisation_ps82',
             title='Initialization_Time')
 
+#--------------------------------------------------------
+#  NIR ODMR Experiments
+#--------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Lock-in Detection Method - AOM and microwaves are modulated via the AWG/PS82. 
+#                            The repeating frequency corresponds to the lock-in 
+#                            frequency.
+#------------------------------------------------------------------------------
+
+class NIR_initialisation_lockin(ExperimentWidget):
+    def __init__(self):
+        params_config = {
+            'laser_on_ns': {
+                'display_text': 'Laser ON Time',
+                'widget': SpinBox(
+                    value=100,
+                    suffix=' ns',
+                    siPrefix=True,
+                    bounds=(1, 1e9),
+                    int=True,
+                    dec=True
+                ),
+            },
+            'laser_off_ns': {
+                'display_text': 'Laser OFF Time',
+                'widget': SpinBox(
+                    value=100,
+                    suffix=' ns',
+                    siPrefix=True,
+                    bounds=(1, 1e9),
+                    int=True,
+                    dec=True
+                ),
+            },
+            'iterations': {
+                'display_text': 'Scope Averages (Iterations)',
+                'widget': SpinBox(
+                    value=100,
+                    int=True,
+                    bounds=(1, None),
+                    dec=True
+                ),
+            },
+            'integration_time': {
+                'display_text': 'Integration Time',
+                'widget': SpinBox(
+                    value=1.0,
+                    suffix=' s',
+                    siPrefix=True,
+                    bounds=(1e-4, 10),
+                    dec=True),
+            },
+            'dwell_time': {
+                'display_text': 'Dwell Time',
+                'widget': SpinBox(
+                    value=0.2,
+                    suffix=' s',
+                    siPrefix=True,
+                    bounds=(1e-4, 10),
+                    dec=True),
+            },
+            'dataset': {
+                'display_text': 'Data Set',
+                'widget': QtWidgets.QLineEdit('pl_scope_trace'), # Renamed default to match data type
+            },
+        }
+
+        super().__init__(
+            params_config,
+            template.experiments.odmr_lockin,
+            'SpinMeasurements',
+            'NIR_initialisation_lockin',
+            title='NIR Initialization Lock-in Scope'
+        )
+
+
+class NIR_CW_ODMR_APD(ExperimentWidget):
+    def __init__(self):
+        params_config = {
+            'start_freq': {
+                'display_text': 'Start Frequency',
+                'widget': SpinBox(
+                    value=3e9,
+                    suffix='Hz',
+                    siPrefix=True,
+                    bounds=(1e3, 6.074e9),
+                    dec=True),
+            },
+            'stop_freq': {
+                'display_text': 'Stop Frequency',
+                'widget': SpinBox(
+                    value=4e9,
+                    suffix='Hz',
+                    siPrefix=True,
+                    bounds=(1e3, 6.075e9),
+                    dec=True),
+            },
+            'num_points': {
+                'display_text': 'Number of Scan Points',
+                'widget': SpinBox(value=101, int=True, bounds=(1, None), dec=True),
+            },
+            'iterations': {
+                'display_text': 'Iterations',
+                'widget': SpinBox(value=10, int=True, bounds=(1, None), dec=True),
+            },
+            'integration_time': {
+                'display_text': 'Averaging Time',
+                'widget': SpinBox(value=0.1, suffix='s',
+                siPrefix=True, bounds=(0.001, 10), dec=True),
+            },
+            'modulation_freq': {
+                'display_text': 'Lock-in Mod Frequency',
+                'widget': SpinBox(value=2000, suffix='Hz',
+                siPrefix=True, bounds=(0, 4e6), dec=True),
+            },
+            'rf_amplitude': {
+                'display_text': 'Microwave Amplitude',
+                'widget': SpinBox(value=7.4, suffix='dBm',
+                siPrefix=True, bounds=(-20, 7.4), dec=True),
+            },
+            'dataset': {
+                'display_text': 'Data Set',
+                'widget': QtWidgets.QLineEdit('odmr'),
+            },
+        }
+        super().__init__(params_config, 
+                        template.experiments.odmr_lockin,
+                        'SpinMeasurements',
+                        'NIR_cw_odmr_sweep_linear_ps82',  
+                        title='ODMR')
+        
+        
+class PLE_Widget(ExperimentWidget):
+
+    def __init__(self):
+
+        params_config = {
+
+            'start_wavelength': {
+                'display_text': 'Start Wavelength',
+                'widget': SpinBox(
+                    value=1040.0,
+                    suffix='nm',
+                    bounds=(1000.0, 1080.0),
+                    dec=True,
+                ),
+            },
+
+            'stop_wavelength': {
+                'display_text': 'Stop Wavelength',
+                'widget': SpinBox(
+                    value=1045.0,
+                    suffix='nm',
+                    bounds=(1000.0, 1080.0),
+                    dec=True,
+                ),
+            },
+
+            'num_points': {
+                'display_text': 'Number of Points',
+                'widget': SpinBox(
+                    value=101,
+                    int=True,
+                    bounds=(2, None),
+                    dec=True,
+                ),
+            },
+
+      #      'modulation_frequency': {
+       #         'display_text': 'Modulation Frequency',
+        #        'widget': SpinBox(
+         #           value=2000,
+          #          suffix='Hz',
+           #         siPrefix=True,
+            #        bounds=(1, 4e3),
+             #       dec=True,
+              #  ),
+           # },
+
+            'integration_time': {
+                'display_text': 'Integration Time',
+                'widget': SpinBox(
+                    value=0.1,
+                    suffix='s',
+                    siPrefix=True,
+                    bounds=(0.001, 1000),
+                    dec=True,
+                ),
+            },
+
+            'averages': {
+                'display_text': 'Number of Averages',
+                'widget': SpinBox(
+                    value=1,
+                    int=True,
+                    bounds=(1, None),
+                    dec=True,
+                ),
+            },
+
+            'settle_time': {
+                'display_text': 'Laser Settle Time',
+                'widget': SpinBox(
+                    value=0.1,
+                    suffix='s',
+                    siPrefix=True,
+                    bounds=(0.0, 5.0),
+                    dec=True,
+                ),
+            },
+
+            'dataset': {
+                'display_text': 'Data Set',
+                'widget': QtWidgets.QLineEdit('ple'),
+            },
+        }
+
+        super().__init__(
+            params_config,
+            template.experiments.odmr_lockin,
+            'PLEMeasurements',
+            'PLE_scan',
+            title='PLE'
+        )
+    

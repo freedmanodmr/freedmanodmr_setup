@@ -40,14 +40,14 @@ def main():
         main_widget = MainWidget(
             {
                 'Direct-Detection Experiments':{
-                    'APD Pulsed-ODMR': MainWidgetItem(template.gui.elements, 'APD_CW_ODMRWidget', stretch=(1, 1)),
+                    'APD Pulsed-ODMR': MainWidgetItem(template.gui.elements, 'APD_Pulsed_ODMRWidget', stretch=(1, 1)),
                     'Rabi': MainWidgetItem(template.gui.elements, 'RabiWidget', stretch=(1, 1)),
                     'EDFS': MainWidgetItem(template.gui.elements, 'EDFSWidget', stretch=(1, 1)),
                     'Delay After Flash': MainWidgetItem(template.gui.elements, 'DAFWidget_PS82', stretch=(1, 1)),
                     'Ramsey': MainWidgetItem(template.gui.elements, 'RamseyWidget', stretch=(1, 1)),
                     'HahnEcho': MainWidgetItem(template.gui.elements, 'HahnEchoWidget', stretch=(1, 1)),
                     'Initialisation Opt': MainWidgetItem(template.gui.elements, 'InitialisationPS82Widget', stretch=(1, 1)),
-                    'Readout Pulse Opt': MainWidgetItem(template.gui.elements, 'ReadoutWidget', stretch=(1, 1)),
+                    'Readout Pulse Observation': MainWidgetItem(template.gui.elements, 'ReadoutWidget', stretch=(1, 1)),
                     'Readout Delay Opt': MainWidgetItem(template.gui.elements, 'ReadoutDelayWidget', stretch=(1, 1)),
                     'MW Delay Opt': MainWidgetItem(template.gui.elements, 'MWDelayWidget', stretch=(1, 1)),
                 },
@@ -63,6 +63,8 @@ def main():
                     'Readout Pulse Opt Lock-in': MainWidgetItem(template.gui.elements, 'ReadoutPulseOptLockinWidget', stretch=(1, 1)),
                     'Readout Delay Opt Lock-in': MainWidgetItem(template.gui.elements, 'ReadoutPulseDelayOptLockinWidget', stretch=(1, 1)),
                     'MW Delay Opt Lock-in': MainWidgetItem(template.gui.elements, 'MicrowaveDelayLockinWidget', stretch=(1, 1)),
+                    'Temp Peak Track Lock-in': MainWidgetItem(template.gui.elements, 'TempPeakTrackCWODMRWidget', stretch=(1, 1)),
+                    'TwoPulse-ODMR Lock-in': MainWidgetItem(template.gui.elements, 'TwoPulse_ODMRWidgetLockin', stretch=(1, 1)),
                 },
                 'Ce Experiments':{
                     'CW-ODMR': MainWidgetItem(template.gui.elements, 'CeODMRWidget', stretch=(1, 1)),
@@ -77,6 +79,11 @@ def main():
                     #'Relaxation': MainWidgetItem(template.gui.elements, 'CeRelaxationWidget', stretch=(1, 1)),
                     #'HahnEcho': MainWidgetItem(template.gui.elements, 'RelaxationWidget', stretch=(1, 1)),
                 },
+                'NIR Experiments':{
+                    'APD CW-ODMR': MainWidgetItem(template.gui.elements, 'NIR_CW_ODMR_APD', stretch=(1, 1)),
+                    'NIR_initialization': MainWidgetItem(template.gui.elements, 'NIR_initialisation_lockin', stretch=(1, 1)),
+                    'PLE': MainWidgetItem(template.gui.elements, 'PLE_Widget', stretch=(1, 1)),
+                    },
                 'Subsystems': MainWidgetItem(nspyre.gui.widgets.subsystem, 'SubsystemsWidget', args=[insmgr.subs.subsystems], stretch=(1, 1)),
                 'Plots': {
                     'ODMR': MainWidgetItem(
@@ -94,9 +101,24 @@ def main():
                         'InitialisationTimePlotWidget',
                         stretch=(100, 100),
                     ),
+                    'Peak Tracking Plot': MainWidgetItem(
+                        template.gui.elements,
+                        'SpecificFlexLinePlotWidget',
+                        stretch=(100, 100),
+                    ),
                     '2D Plots': MainWidgetItem(
                         template.gui.elements,
                         '_3DColourPlotWidget',
+                        stretch=(100, 100),
+                    ),
+                    'PLE': MainWidgetItem(
+                        template.gui.elements,
+                        'PLEPlotWidget',
+                        stretch=(100, 100),
+                    ),
+                    'PLE Power': MainWidgetItem(
+                        template.gui.elements,
+                        'PLEPowerPlotWidget',
                         stretch=(100, 100),
                     ),
                 },
