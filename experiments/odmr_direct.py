@@ -1,3 +1,4 @@
+# %%
 """
 This is example script demonstrates most of the basic functionality of nspyre.
 """
@@ -99,9 +100,7 @@ class SpinMeasurements:
          
          sg.set_amplitude_rf(rf_amplitude)  # Maximum amp is 7.4 dBm from the sig gen.
          sg.set_output(1)
-         sg.set_amplitude_rf(rf_amplitude)  # Maximum amp is 7.4 dBm from the sig gen.
-         sg.set_output(1)
-         
+
          time.sleep(0.01)
                      
          # --------------------------------
@@ -129,6 +128,8 @@ class SpinMeasurements:
          ps82.allocate_sequence(mw_seq, 0)
          ps82.allocate_sequence(laser_seq, 1)
          ps82.allocate_sequence(trig_seq, 2)
+         
+         time.sleep(0.05)
    
          ps82.begin_pulses(n_runs=-1)       
          
@@ -376,10 +377,12 @@ class SpinMeasurements:
                         return
 
 
-    def odmr_readout_optimisation_ps82(
+    def odmr_readout_observation_ps82(
              self,
              dataset: str,
              iterations: int,
+             freq: int,
+             rf_amplitude: int,
              
              # --- PS82 timing defaults ---
              init_ns: int,
@@ -400,7 +403,7 @@ class SpinMeasurements:
              event_divider: int = 1,  # Reduce the number of events counted
              ):
          """
-         Pulsed Rabi oscillation experiment using AWG + TimeTagger.        
+         Pulsed Rabi oscillation experiment using PS82 + TimeTagger.        
          Signal      = init + MW + readout
          Background  = init + readout (no MW)
 
@@ -413,7 +416,10 @@ class SpinMeasurements:
              
              tt20 = mgr.tt20
              ps82 = mgr.ps82
+             sg = mgr.sg
                          
+             sg.set_frequency(freq)
+             sg.set_amplitude_rf(rf_amplitude)
              # ------------------------------------------------
              # Streaming datasets
              # ------------------------------------------------
@@ -515,13 +521,15 @@ class SpinMeasurements:
              detector_delay_ns: int = 100,
              ):
          """
-         Pulsed Rabi oscillation experiment using PulseStreamer8/2 + TimeTagger.        
-         Signal      = init + MW + readout
-         Background  = init + readout (no MW)
+         Pulsed Delay After Flash experiment using PulseStreamer8/2 + TimeTagger.        
+         Signal      = init + gap + readout
+         Background  = readout
 
          Stored data:
-             x-axis → MW pulse length (ns)
+             x-axis → Gap Length
              y-axis → Integrated photon counts
+             
+         Two colour experiment possible using "red" laser channel
          """
 
          with MyInstrumentManager() as mgr, DataSource(dataset) as data:
@@ -559,12 +567,16 @@ class SpinMeasurements:
                      # Pulse timing - ps82 units is nanoseconds, but the TT is picoseconds
                      # --------------------------------
                      laser_seq = [(init_ns,1),(gap_ns,0),(100,0),(readout_ns,1),(recovery_ns - gap_ns,0)]
+                 #    red_seq = [(init_ns,0),(gap_ns,1),(100,1),(readout_ns,0),(recovery_ns - gap_ns,0)]
                      trig_seq = [(init_ns,0),(gap_ns,0),(100,1),(readout_ns,0),(recovery_ns - gap_ns,0)]
                      bkg_seq = [(init_ns,0),(gap_ns,0),(100,0),(readout_ns,1),(recovery_ns - gap_ns,0)]
                      
                      ps82.allocate_sequence(laser_seq, 1)
+                #     ps82.allocate_sequence(red_seq, 4)
                      ps82.allocate_sequence(trig_seq, 2)
-                
+                     
+                     time.sleep(0.05)
+                     
                      ps82.begin_pulses(n_runs=-1)              
                      
                      # --------------------------------
@@ -576,14 +588,13 @@ class SpinMeasurements:
                          binwidth_ps=binwidth_ns * 1e3,
                          n_bins=n_bins,
                          capture_time_s=integration_time,
-                         start_delay=gate_delay_ps,
-                         )
+                         start_delay=gate_delay_ps)
                      
                      sig_counts[idx] = counts.sum()
                      
                      ps82.allocate_sequence(bkg_seq, 1)
                      
-                     time.sleep(0.1)
+                     time.sleep(0.10)
                      
                      ps82.begin_pulses(n_runs=-1)
                      
@@ -593,8 +604,7 @@ class SpinMeasurements:
                          binwidth_ps=binwidth_ns * 1e3,
                          n_bins=n_bins,
                          capture_time_s=integration_time,
-                         start_delay=gate_delay_ps,
-                         )
+                         start_delay=gate_delay_ps)
                      
                      bkg_counts[idx] = counts.sum()
                      
@@ -2039,7 +2049,7 @@ class SpinMeasurements:
 
 
 #------------------------------------------------------------------------------
-# AWG Optimisation Experiments - Simple Experiments to Visual the Initialisation
+# AWG Optimisation Experiments - Simple Experiments to Visualize the Initialisation
 # and Readout Pulses and Optimise the Delay Timings
 #------------------------------------------------------------------------------
 
@@ -3191,7 +3201,7 @@ class SpinMeasurements:
                         return
 
 
-    def ce_odmr_pulsed_sweep_linear(self,
+    def ce_odmr_pulsed_sweep_linear_ps82(self,
                    dataset: str,
                    start_freq: float,
                    stop_freq: float,
@@ -3463,8 +3473,7 @@ class SpinMeasurements:
                     n_bins=n_bins,
                     capture_time_s=integration_time,
                     start_delay=detector_delay_ns * 1e3,
-                    event_divider=event_divider,
-                    )
+                    event_divider=event_divider)
 
                 counts = np.asarray(counts, dtype=float)
                 
@@ -3482,15 +3491,14 @@ class SpinMeasurements:
                         'recovery_ns': recovery_ns,
                         'binwidth_ns': binwidth_ns,
                         'n_bins': n_bins,
-                        'iterations': iterations,
-                        },
+                        'iterations': iterations},
                     'title': 'ODMR Initialisation Optimisation',
                     'xlabel': 'Time (µs)',
                     'ylabel': 'Counts',
                     'datasets': {
                         'histogram': hist_sweeps}})
                 
-            if experiment_widget_process_queue(self.queue_to_exp) == "stop":
+            if experiment_widget_process_queue(self.queue_to_exp) == 'stop':
                 ps82.stop()
                 return
         
@@ -3498,3 +3506,5 @@ class SpinMeasurements:
 if __name__ == '__main__':
     exp = SpinMeasurements()
     exp.odmr_sweep_random('odmr', 1e9, 4e9, 101, 10)
+
+# %%
